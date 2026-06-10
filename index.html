@@ -670,11 +670,21 @@
       showTyping();
 
       try {
-        const res = await fetch(WEBHOOK_URL, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ message: text })
-        });
+       let sessionId = localStorage.getItem('askdeluxe_session_id');
+
+if (!sessionId) {
+  sessionId = crypto.randomUUID();
+  localStorage.setItem('askdeluxe_session_id', sessionId);
+}
+
+const res = await fetch(WEBHOOK_URL, {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({
+    sessionId: sessionId,
+    message: text
+  })
+});
 
         const data = await res.json();
         hideTyping();
