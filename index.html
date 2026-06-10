@@ -686,18 +686,35 @@ const res = await fetch(WEBHOOK_URL, {
   })
 });
 
-        const data = await res.json();
-        hideTyping();
+const rawResponse = await res.text();
 
-        const reply = data.reply || data.output || data.text || data.message
-          || "Thank you for your message! For immediate assistance please call us at 786-901-0611. 😊";
+console.log('n8n status:', res.status);
+console.log('n8n raw response:', rawResponse);
 
-        addBotMessage(reply);
+if (!res.ok) {
+  throw new Error(`n8n returned status ${res.status}: ${rawResponse}`);
+}
 
-      } catch (err) {
-        hideTyping();
-        addBotMessage("Sorry, I'm having trouble connecting right now. Please call us directly at 786-901-0611 or visit deluxemedspabeauty.com 😊");
-      }
+let data;
+
+try {
+  data = JSON.parse(rawResponse);
+} catch (jsonError) {
+  throw new Error(`n8n did not return valid JSON: ${rawResponse}`);
+}
+
+hideTyping();
+
+const reply = data.reply || data.output || data.text || data.message
+  || "No reply field found in n8n response.";
+
+addBotMessage(reply);
+
+     } catch (err) {
+  console.error('Chat connection error:', err);
+  hideTyping();
+  addBotMessage("Connection error: " + err.message);
+}
 
       isTyping = false;
       input.focus();
